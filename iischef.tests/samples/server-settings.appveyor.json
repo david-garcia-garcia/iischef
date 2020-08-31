@@ -1,0 +1,96 @@
+{
+  "id": "local",
+  "primaryTempStorage": "default",
+  "tempStorages": [
+    {
+      "id": "default",
+      "path": "C:\\_temporary",
+      "type": null
+    }
+  ],
+  "primaryLogStorage": "default",
+  "logStorages": [
+    {
+      "id": "default",
+      "path": "C:\\_logs",
+      "type": null
+    }
+  ],
+  "primaryApplicationStorage": "default",
+  "applicationStorages": [
+    {
+      "id": "default",
+      "path": "C:\\_webs",
+      "type": null
+    }
+  ],
+  "primaryContentStorage": "default",
+  "contentStorages": [
+    {
+      "id": "default",
+      "path": "C:\\_contents",
+      "type": "sata"
+    }
+  ],
+  "primarySqlServer": "default",
+  "sqlServers": [
+    {
+      "id": "default",
+      "connectionString": "Server=(local)\\SQL2017;Database=master;User ID=sa;Password=Password12!"
+    }
+  ],
+  "primaryCouchbaseServer": "default",
+  "couchbaseServers": [
+    {
+      "id": "default",
+      "uri": "couchbase://127.0.0.1",
+      "bucketName": "couch",
+      "bucketPassword": "couch"
+    }
+  ],
+  "endpoints": [
+    {
+      "id": "public",
+      "ip": "192.168.1.1"
+    },
+    {
+      "id": "private",
+      "ip": "127.0.0.1",
+      "forcehosts": true
+    }
+  ],
+  "accounts": [
+    {
+      "id": "superaccount",
+      "username": "myusername",
+      "password": "mypassword"
+    }
+  ],
+  "artifactTempPath": "C:\\chef-temp-artifact\\",
+  "runtime_overrides": {
+    "environment": "debug",
+    "customstring": "mycustomserverleveloverride"
+  },
+  "cdn_bindings": [
+    {
+      "id": "cdn0",
+      "OriginBindings": [
+        {
+          "id": "binding1",
+          "hostname": "cdnsrvsbniss0102.sabentishosting.com",
+          "port": 80,
+          "interface": "*",
+          "addtohosts": true
+        }
+      ],
+      "EdgeUrls": [
+        "http://externa-url",
+        "https://external-url2"
+      ]
+    }
+  ],
+  "safeIpAddresses": [
+    "127.0.0.1",
+    "108.161.176.0/20"
+  ] 
+}

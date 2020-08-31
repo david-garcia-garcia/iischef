@@ -1,0 +1,10 @@
+﻿id: 'chef-appveyor-sample'
+# Type of downloader/monitor to use,
+# currently only appveyor
+downloader:
+# Currently only "appveyor" and "localpath" supported
+ type: 'appveyor'
+ project: 'chef-appveyor-sample'
+ username: 'David19767'
+ apitoken: ''
+ branch: 'master'

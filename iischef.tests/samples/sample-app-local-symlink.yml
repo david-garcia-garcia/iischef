@@ -1,0 +1,8 @@
+﻿id: 'php-test'
+mount_strategy: '%MOUNTSTRATEGY%'
+# Type of downloader/monitor to use,
+# currently only appveyor
+downloader:
+# Currently only "appveyor" and "localpath" supported
+ type: 'localpath'
+ path: '%PATH%'

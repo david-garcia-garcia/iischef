@@ -1,0 +1,11 @@
+﻿id: 'php-test-1'
+mount_strategy: '%MOUNTSTRATEGY%'
+# Type of downloader/monitor to use,
+# currently only appveyor
+downloader:
+# Currently only "appveyor" and "localpath" supported
+ type: 'localpath'
+ path: '%PATH%'
+runtime_overrides:
+ 'deployment.custom.setting': 'my_custom_setting'
+ #'services.contents.mount.files.path': 'c:\\missingdir'

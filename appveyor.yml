@@ -1,0 +1,91 @@
+clone_depth: 8
+services:
+  - mssql2017
+  - iis
+#deploy:
+#  provider: NuGet
+#  server: https://chocolatey.org/
+#  api_key:
+#    secure: k0YJOWYRCNzdvyPzKgUxeeSO48W/n6L1sSGHWmQA48bQfnTef+rt88HDp7/YVoK2
+#  skip_symbols: true
+#  artifact: /.*\.nupkg/
+image:
+  - Visual Studio 2019
+install:
+  - ps: |
+       echo "Running on cloud $Env:APPVEYOR_BUILD_WORKER_CLOUD";
+       echo "Running on image $Env:APPVEYOR_BUILD_WORKER_IMAGE";
+       $cpu = Get-WmiObject Win32_ComputerSystem | Select NumberOfProcessors, NumberOfLogicalProcessors, Name, Manufacturer, Model;
+       $clockSpeed = Get-WmiObject -Class Win32_Processor | Select CurrentClockSpeed;
+       $memoryGb = Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property capacity -Sum | Foreach {"{0:N2}" -f ([math]::round(($_.Sum / 1GB),2))};
+       echo "NumberOfLogicalProcessors: $($cpu.NumberOfLogicalProcessors)";
+       echo "NumberOfProcessors: $($cpu.NumberOfProcessors)";
+       echo "System Memory: $memoryGb";
+       echo "CPU clock speed: $($clockSpeed.CurrentClockSpeed)Hz";
+       echo "Computer Name: $($cpu.Name)";
+       echo "Manufacturer: $($cpu.Manufacturer)";
+       echo "Model: $($cpu.Model)";
+  - cmd: mkdir "c:\testlogs"
+  # - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1')) #Para bloquear y acceder por escritorio remoto
+  - cmd: choco install -y --ignorechecksum iis-arr 2>&1 > C:\TestLogs\choco-install-iis-arr.log
+  - cmd: nuget restore iischef.sln 2>&1 > C:\TestLogs\nuget-restore.log
+  - cmd: call msiexec.exe /i C:\projects\iischef\packages\Microsoft.SyncFramework.2.1.0.2\tools\x86\Synchronization-v2.1-x86-ENU.msi /passive
+  - cmd: call msiexec.exe /i C:\projects\iischef\packages\Microsoft.SyncFramework.DatabaseProvider.3.1.0.0\tools\x86\DatabaseProviders-v3.1-x86-ENU.msi /passive
+  - cmd: call msiexec.exe /i C:\projects\iischef\packages\Microsoft.SyncFramework.ProviderServices.2.1.0.0\tools\x86\ProviderServices-v2.1-x86-ENU.msi /passive
+  - cmd: call msiexec.exe /i C:\projects\iischef\packages\Microsoft.SyncFramework.2.1.0.2\tools\x64\Synchronization-v2.1-x64-ENU.msi /passive
+  - cmd: call msiexec.exe /i C:\projects\iischef\packages\Microsoft.SyncFramework.DatabaseProvider.3.1.0.0\tools\x64\DatabaseProviders-v3.1-x64-ENU.msi /passive
+  - cmd: call msiexec.exe /i C:\projects\iischef\packages\Microsoft.SyncFramework.ProviderServices.2.1.0.0\tools\x64\ProviderServices-v2.1-x64-ENU.msi /passive
+  - ps: Start-Transcript -path C:\console.txt -append
+  - ps: Enable-WindowsOptionalFeature -FeatureName "IIS-CertProvider" -Online
+  - ps: $password = "LbdElp2309&589" | ConvertTo-SecureString -AsPlainText -Force
+  - ps: New-LocalUser "User03" -Password $password -FullName "Third User" -Description "Dummy account for local certificate store"
+  - ps: Add-LocalGroupMember -Group "Administrators" -Member "User03"
+  - ps: Enable-WebCentralCertProvider -CertStoreLocation "C:\Windows\Temp" -UserName "User03" -Password "LbdElp2309&589"
+  - ps: Remove-WebSite -Name "Default Web Site"
+build_script:
+  - ps: Start-Transcript -path C:\console.txt -append
+  - cmd: del iischef.tests\samples\server-settings.json
+  - cmd: ren iischef.tests\samples\server-settings.appveyor.json server-settings.json 
+  - cmd: sc config W3SVC start=auto
+  - cmd: MSBuild.exe iischef.sln /m /t:rebuild /p:Configuration=Release /consoleloggerparameters:ErrorsOnly
+  - cmd: 7z a -r iischef.cmdlet.zip .\iischef.cmdlet\bin\Release\*
+  - cmd: 7z a -r iischef.service.zip .\iischef.service\bin\Release\*
+  - cmd: COPY iischef.cmdlet.zip %APPVEYOR_BUILD_FOLDER%\chocolatey\tools\iischef.cmdlet.zip
+  - cmd: COPY iischef.service.zip %APPVEYOR_BUILD_FOLDER%\chocolatey\tools\iischef.service.zip
+  - cmd: cd %APPVEYOR_BUILD_FOLDER%\chocolatey
+  - ps: ((Get-Content -path iischef.nuspec -Raw) -replace '{VERSION}', $Env:APPVEYOR_BUILD_VERSION) | Set-Content -Path iischef.nuspec
+  - cmd: choco pack
+  - ps: |
+       $path = "$Env:APPVEYOR_BUILD_FOLDER\chocolatey"
+       $packagePath = (Get-ChildItem -Path $path -Recurse -Filter "*.nupkg").FullName;
+       $packageName = (Get-ChildItem -Path $path -Recurse -Filter "*.nupkg").Name;
+       if([System.IO.File]::Exists($packagePath)) { Push-AppveyorArtifact $packagePath -FileName $packageName }
+test_script:
+  - cmd: 'echo %APPVEYOR_BUILD_FOLDER%'
+  # - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1')) #Para bloquear y acceder por escritorio remoto
+  # - cmd: '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\MSTest.exe" /testcontainer:iischef.tests\bin\Debug\healthmonitortests.dll /noisolation'
+  - cmd: '"%APPVEYOR_BUILD_FOLDER%\packages\xunit.runner.console.2.4.1\tools\net472\xunit.console" "%APPVEYOR_BUILD_FOLDER%\iischef.tests\bin\Release\healthmonitortests.dll" > result.trx'
+  - ps: |
+      If ($Env:APPVEYOR_REPO_COMMIT_MESSAGE -match 'rdptest') {
+        $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+      }
+on_failure:
+  - ps: |
+      $now=get-date
+      $startdate=$now.addminutes(-60);
+      $el = get-eventlog -log System -After $startdate -EntryType Error, Warning;
+      $el | export-clixml C:\TestLogs\WindowsEventViewerLog_system.txt;
+      $el = get-eventlog -log Application -After $startdate -EntryType Error, Warning;
+      $el | export-clixml C:\TestLogs\WindowsEventViewerLog_application.txt;
+  # Copy the published application, only in case of failure
+  - cmd: 7z a -r C:\_webs.zip C:\_webs\* > null & exit 0
+on_finish:
+  - cmd: copy C:\console.txt C:\TestLogs\console.txt
+  - cmd: 7z a -r C:\TestLogs.zip c:\TestLogs\* > null
+  - ps: Push-AppveyorArtifact "C:\TestLogs.zip" -FileName "TestLogs.zip"
+  - ps: if([System.IO.File]::Exists("c:\_webs.zip")) { Push-AppveyorArtifact "C:\_webs.zip" -FileName "_webs.zip" }
+artifacts:
+  - path: iischef.cmdlet.zip
+    name: iischef.cmdlet
+  - path: iischef.service.zip
+    name: iischef.service

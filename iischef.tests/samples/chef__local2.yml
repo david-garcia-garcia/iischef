@@ -1,0 +1,4 @@
+﻿inherit: default
+scope-environment-regex: local2
+runtime_overrides:
+  "overriden" : "my_overriden_local_setting2"

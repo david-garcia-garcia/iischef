@@ -1,0 +1,109 @@
+﻿{
+  "id": "local",
+  "primaryTempStorage": "default",
+  "certificateCheckSchedule": 20,
+  "tempStorages": [
+    {
+      "id": "default",
+      "path": "D:\\_temporary",
+      "type": null
+    }
+  ],
+  "primaryLogStorage": "default",
+  "logStorages": [
+    {
+      "id": "default",
+      "path": "D:\\_logs",
+      "type": null
+    }
+  ],
+  "primaryApplicationStorage": "default",
+  "applicationStorages": [
+    {
+      "id": "default",
+      "path": "D:\\_webs",
+      "type": null
+    }
+  ],
+  "primaryContentStorage": "default",
+  "contentStorages": [
+    {
+      "id": "default",
+      "path": "D:\\_contents",
+      "type": "sata"
+    }
+  ],
+  "primarySqlServer": "default",
+  "sqlServers": [
+    {
+      "id": "default",
+      "connectionString": "Server=localhost;Integrated Security = true;"
+    },
+    {
+      "id": "wauth",
+      "connectionString": "Server=localhost;Integrated Security = true;",
+      "useWindowsAuth": true
+    }
+  ],
+  "primaryCouchbaseServer": "default",
+  "couchbaseServers": [
+    {
+      "id": "default",
+      "uri": "couchbase://127.0.0.1",
+      "bucketName": "couch",
+      "bucketPassword": "couch"
+    }
+  ],
+  "endpoints": [
+    {
+      "id": "public",
+      "ip": "192.168.1.1"
+    },
+    {
+      "id": "private",
+      "ip": "127.0.0.1",
+      "forcehosts": true
+    }
+  ],
+  "accounts": [
+    {
+      "id": "superaccount",
+      "username": "myusername",
+      "password": "mypassword"
+    }
+  ],
+  "runtime_overrides": {
+    "environment": "debug",
+    "customstring": "mycustomserverleveloverride"
+  },
+  "cdn_bindings": [
+    {
+      "id": "cdn0",
+      "OriginBindings": [
+        {
+          "id": "binding1",
+          "hostname": "cdnsrvsbniss0102.sabentishosting.com",
+          "port": 80,
+          "interface": "*",
+          "addtohosts": true
+        }
+      ],
+      "EdgeUrls": [
+        "http://externa-url",
+        "https://external-url2"
+      ]
+    }
+  ],
+  "safeIpAddresses": [
+    "127.0.0.1",
+    "108.161.176.0/20"
+  ],
+  "defaultApplicationLimits": {
+    "FastCgiMaxInstances": 5,
+    "IisPoolMaxCpuLimitPercent": 60,
+    "IisPoolCpuLimitAction": "ThrottleUnderLoad",
+    "IisPoolMaxPrivateMemoryLimitKb": 3145728,
+    "IisPoolStartupModeAllowAlwaysRunning": true,
+    "IisVirtualDirectoryAllowPreloadEnabled": true
+  }
+}

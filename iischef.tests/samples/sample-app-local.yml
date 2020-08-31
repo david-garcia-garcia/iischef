@@ -1,0 +1,24 @@
+﻿id: 'php-test'
+mount_strategy: '%MOUNTSTRATEGY%'
+tags: 'mytag1'
+# Type of downloader/monitor to use,
+# currently only appveyor
+downloader:
+# Currently only "appveyor" and "localpath" supported
+ type: 'localpath'
+ path: '%PATH%'
+runtime_overrides:
+ 'deployment.custom.setting': 'my_custom_setting'
+ 'services.contents.mount.files.path': 'c:\\missingdir'
+application_limits:
+  FastCgiMaxInstances: 5
+  IisPoolMaxCpuLimitPercent: 40
+  IisPoolCpuLimitAction: Throttle
+  IisPoolMaxPrivateMemoryLimitKb: 36700189
+  IisPoolStartupModeAllowAlwaysRunning: true
+  IisVirtualDirectoryAllowPreloadEnabled: true
+  IisPoolIdleTimeoutAction: Suspend
+sqlservice_sqlsrv-alternate:
+  connectionString: 'default'
+  databaseName: 'alternate-database-name'
+  passThroughAuth: true

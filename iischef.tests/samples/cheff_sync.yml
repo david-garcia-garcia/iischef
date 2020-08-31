@@ -1,0 +1,162 @@
+# The name of the application. Must be unique and max 5 characters.
+id: 'phpsy'
+
+# List of deployers to use. The minimum for a web app
+# is a storage deployer and an IIS deployer.
+runtime_overrides:
+  'mycustomsetting1' : 'e:\whatisthis\whatitis\'
+  'mycustomsetting2' : 'e:\whatisthis\whatitis\'
+  'mycustomsetting3' : 'e:\whatisthis\whatitis\'
+deployers:
+# The app deployer has no configuration at the moment
+# but is the MOST important one as it provides storage
+# for the artifact itself, log, and temporary files.
+# Current there is a tight couple between this service
+# and the iischef base implementation, so you CANNOT
+# avoid using it.
+- type: 'app'
+  # The IIS deployer can be used to setup IIS sites
+  # on top of our artifact
+  configuration_replacement_files:
+   'web/config.template.php': 'web/config.php'
+  # After this number of days, files in the log folder
+  # will be cleared.
+  log_expiration: 30
+- type: 'iis'
+  pools:
+   # If no specific pool is set for a binding, the first one
+   # in the list will be used.
+   - id: 'default'
+     Enable32BitAppOnWin64: true
+     AutoStart: true
+     ManagedPipelineMode: Integrated
+     StartMode: AlwaysRunning
+     ManagedRuntimeVersion: ''
+     LoadUserProfile: true
+   # Mount points are virtual directories. You need
+   # at least one mount point for the root application 
+   # identified with the boolean "root" attribute
+  mounts:
+   - id: 'root'
+     root: true
+     path: '/web'
+  bindings:
+   - id: 'local'
+     hostname: 'chef.testing.framework'
+     # default to port #80
+     port: 81
+     # interface must be local (mounted through local hosts file)
+     # or public (to the internet). The deployment server might
+     # have additional binding interfaces defined.
+     # If this is an environment created from a branch
+     # additional settings can be added with ease.
+     interface: 'local'
+   - id: 'public'
+     hostname: 'chef.testing.framework.public'
+     port: 81
+     interface: 'public'
+   - id: 'private'
+     hostname: 'chef.testing.framework.private'
+     port: 81
+     interface: 'private'
+# The php deployer is used to deploy a php runtime
+- type: 'php'
+  runtime:
+   - {type: 'dl', uri: 'http://windows.php.net/downloads/releases/archives/php-7.0.15-nts-Win32-VC14-x64.zip', maps: {'*' : 'php/'}}
+   - {type: 'dl', uri: 'http://windows.php.net/downloads/pecl/releases/xdebug/2.5.1/php_xdebug-2.5.1-7.0-nts-vc14-x64.zip', maps: {'php_xdebug.dll':'php/ext/php_xdebug.dll'}}
+   - {type: 'dl', uri: 'http://windows.php.net/downloads/pecl/releases/pcs/1.3.3/php_pcs-1.3.3-7.0-nts-vc14-x64.zip', maps: {'php_pcs.dll':'php/ext/php_pcs.dll'}}
+   - {type: 'dl', uri: 'http://windows.php.net/downloads/pecl/releases/igbinary/2.0.1/php_igbinary-2.0.1-7.0-nts-vc14-x64.zip', maps: {'php_igbinary.dll': 'php/ext/php_igbinary.dll'}}
+   - {type: 'dl', uri: 'http://windows.php.net/downloads/pecl/releases/couchbase/2.2.4/php_couchbase-2.2.4-7.0-nts-vc14-x64.zip', maps: {'php_couchbase.dll':'php/ext/php_couchbase.dll', 'libcouchbase.dll':'php/libcouchbase.dll'}}
+   - {type: 'dl', uri: 'http://windows.php.net/downloads/pecl/releases/pdo_sqlsrv/4.1.7preview/php_pdo_sqlsrv-4.1.7preview-7.0-nts-vc14-x64.zip', maps: {'php_pdo_sqlsrv.dll': 'php/ext/php_pdo_sqlsrv.dll'}}
+   - {type: 'dl', uri: 'http://windows.php.net/downloads/pecl/releases/wincache/2.0.0.8/php_wincache-2.0.0.8-7.0-nts-vc14-x64.zip', maps: {'php_wincache.dll': 'php/ext/php_wincache.dll'}}
+ # CERTIFICATES
+   - {type: 'dl', uri: 'http://curl.haxx.se/ca/cacert.pem', maps: {'cacert.pem': '/cacert.pem'}}
+   - {type: 'file', 'action':'copy', 'source':'php/php.ini-production', 'destination':'php/php.ini'}
+   - {type: 'ini', 'key':curl.cainfo, 'value':'%RUNTIME%/cacert.pem'}
+   - {type: 'ini', 'key':openssl.cafile, 'value':'%RUNTIME%/cacert.pem'}
+ # EXTENSION DIR
+   - {type: 'ini', 'key':extension_dir, 'value':'%RUNTIME%/php/ext'}
+ # EXTENSION SETTINGS
+   - {type: 'ini', multivalue: true, 'key':extension, 'value':php_intl.dll}
+   - {type: 'ini', multivalue: true, 'key':extension, 'value':php_bz2.dll}
+   - {type: 'ini', multivalue: true, 'key':extension, 'value':php_curl.dll}
+   - {type: 'ini', multivalue: true, 'key':extension, 'value':php_enchant.dll}
+   - {type: 'ini', multivalue: true, 'key':extension, 'value':php_exif.dll}
+   - {type: 'ini', multivalue: true, 'key':extension, 'value':php_fileinfo.dll}
+   - {type: 'ini', multivalue: true, 'key':extension, 'value':php_gettext.dll}
+   - {type: 'ini', multivalue: true, 'key':extension, 'value':php_gd2.dll}
+   - {type: 'ini', multivalue: true, 'key':extension, 'value':php_mbstring.dll}
+   - {type: 'ini', multivalue: true, 'key':extension, 'value':php_openssl.dll}
+   - {type: 'ini', multivalue: true, 'key':extension, 'value':php_soap.dll}
+   - {type: 'ini', multivalue: true, 'key':extension, 'value':php_xmlrpc.dll}
+   - {type: 'ini', multivalue: true, 'key':extension, 'value':php_wincache.dll}
+   - {type: 'ini', multivalue: true, 'key':extension, 'value':php_pdo_sqlsrv.dll}
+   - {type: 'ini', multivalue: true, 'key':extension, 'value':php_pcs.dll}
+   - {type: 'ini', multivalue: true, 'key':extension, 'value':php_igbinary.dll}
+   - {type: 'ini', multivalue: true, 'key':extension, 'value':php_couchbase.dll}
+   - {type: 'ini', multivalue: true, 'key':extension, 'value':php_tideways.dll}
+   - {type: 'ini', multivalue: true, 'key':extension, 'value':php_com_dotnet.dll}
+   - {type: 'ini', multivalue: true, 'key':extension, 'value':php_openssl.dll}
+   - {type: 'ini', multivalue: true, 'key':zend_extension, 'value':php_opcache.dll}
+   - {type: 'ini', multivalue: true, 'key':zend_extension, 'value':php_xdebug.dll}
+ # RUNTIME DIRECTORIES
+   - {type: 'ini', 'key':error_log, 'value':'%LOG%/php_error_%DEPLOYMENTID%.log', ensureDir: 'file'}
+   - {type: 'ini', 'key':upload_tmp_dir, 'value':'%TEMP%/upload_temp_dir', ensureDir: 'dir'}
+   - {type: 'ini', 'key':xdebug.profiler_output_dir, 'value':'%LOG%/xdebug_profile', ensureDir: 'dir'}
+   - {type: 'ini', 'key':xdebug.trace_output_dir, 'value':'%LOG%/xdebug_trace', ensureDir: 'dir'}
+   - {type: 'ini', 'key':xdebug.remote_log, 'value':'%LOG%/remote_%DEPLOYMENTID%.log', ensureDir: 'file'}
+   - {type: 'ini', 'key':xdebug.trace_output_name, 'value':'trace.%u'}
+   - {type: 'ini', 'key':xdebug.profiler_output_name, 'value':'profile.%u'}
+   - {type: 'ini', 'key':session.save_path, 'value':'%TEMP%/session_save_path/', ensureDir: 'file'}
+   - {type: 'ini', 'key':date.timezone, 'value':'Europe/Madrid'} 
+ # WINCACHE...
+   - {type: 'ini', 'key':wincache.fcenabled, 'value': 0}
+   - {type: 'ini', 'key':wincache.ucenabled, 'value': 1}
+   - {type: 'ini', 'key':wincache.fcachesize , 'value': 8}
+   - {type: 'ini', 'key':wincache.maxfilesize, 'value': 3000}
+   - {type: 'ini', 'key':wincache.ucachesize , 'value': 128}
+   - {type: 'ini', 'key':wincache.scachesize , 'value': 16}
+   - {type: 'ini', 'key':wincache.reroute_enabled , 'value': 0}
+   - {type: 'ini', 'key':wincache.filemapdir , 'value':'%RUNTIME%/wincache_filemap', ensureDir: 'dir'}
+   - {type: 'ini', 'key':wincache.enablecli , 'value':'On'}
+# TIDEWAYS
+   - {type: 'ini','key':tideways.api_key , 'value': 'J3y64K4zDvflMA87'}
+   - {type: 'ini','key':tideways.auto_prepend_library , 'value': 0}
+# GENERIC
+   - {type: 'ini','key':fastcgi.impersonate , 'value': 1}
+   - {type: 'ini','key':cgi.fix_pathinfo , 'value': 1}
+   - {type: 'ini','key':cgi.force_redirect , 'value': 0}
+   - {type: 'ini','key':fastcgi.logging , 'value': 0}
+   - {type: 'ini','key':realpath_cache_size , 'value': '5M'}
+   - {type: 'ini','key':realpath_cache_ttl , 'value': 1800}
+   - {type: 'ini','key':sys_temp_dir , 'value': '%TEMP%/sys_temp_dir', ensureDir: 'dir'}
+   - {type: 'ini','key':upload_tmp_dir , 'value': '%TEMP%/upload_tmp_dir', ensureDir: 'dir'}    
+# OPCACHE
+   - {type: 'ini','key':opcache.enable , 'value': 1}
+   - {type: 'ini','key':opcache.memory_consumption , 'value': 256}
+   - {type: 'ini','key':opcache.max_accelerated_files , 'value': 50000}
+   - {type: 'ini','key':opcache.revalidate_freq , 'value': 30}
+services:
+# storage service provides disk storage
+# for the application, and optionaly mounts
+# this on the web-app using junctions.
+# Each application has assigned a unique storage
+# location. The "name" of the storage is used
+# as a base directory.
+# exposed to application as ['services']['service-name']['path']
+  - type: 'disk'
+    id: 'contents'
+# Symlink/junction this to a directory in the web application
+    mounts:
+     - id: 'files'
+       path: 'files'
+       mountpath: 'sites/default/'
+  - type: 'sqlsrv'
+    id: 'sqlsrv'
+    recovery-model: 'Simple'
+  - type: 'couchbase'
+    id: 'couchbase-cache'
+  - type: 'scheduler'
+    id: 'cron'
+    command: 'wget http://www.google.com/'
+    frequency: 5

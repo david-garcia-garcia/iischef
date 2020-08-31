@@ -1,0 +1,329 @@
+﻿# Optional. Not currently in use. 
+# The name of the application. Must be unique and max 5 characters.
+id: 'piphp'
+# Optional. Not currently in use. 
+# Required 'master' branch name. 
+master-branch: 'b-prevencionintegral'
+# Regex match against the environment name (the one
+# in the installed chef in your server or local environment)
+# that this configuration file will ONLY be used for.
+# Defaults to ".*" (match all)
+scope-environment-regex: '.*'
+# Regex match against the branch name (the one
+# in the installed chef in your server or local environment)
+# that this configuration file will ONLY be used for.
+# Defaults to ".*" (match all)
+scope-branch-regex: '.*'
+# Specify any number of tags assigned to an environment,
+# by default the only available tag is "app-id-{applicationname}"
+# Leave empty to disable tag matching for this configuration file.
+scope-tags: 'mytag1, mytag2, mytag3, app-id-myapplication'
+# When merging several configuration files
+# this will indicate the merge order (from lowest to highest,
+# highest ways override settings from lowest weights)
+scope-weight: 0
+# Behaviour specific to the deployment
+deployment:
+  # Specify a deployment window, i.e. the application
+  # will only be automatically deployed within these windows.
+  # Leavy empty to deploy any time a new artifact is available.
+  deployment_windows:
+    w0:
+      timezone: 'Turkey Standard Time'
+      start: 00:00
+      end: 04:00
+    w1:
+      timezone: 'Turkey Standard Time'
+      start: 21:00
+      end: 24:00
+# Automatically deploy environment tokens (i.e. database credentials or paths)
+# on the provided templates and save the result to the specified destinatino.
+configuration_replacement_files:
+  'ETG.SABENTISpro.IIS\Settings\default_settings.yml': 'ETG.SABENTISpro.IIS\Settings\settings.yml'
+  'ETG.SABENTISpro.UI\dist\env-default.json': 'ETG.SABENTISpro.UI\dist\env.json'
+# Dump a copy of the full JSON configuration files
+# to the specified paths (Relative to the artifact's root)
+configuration_dump_paths:
+  path0: 'ETG.SABENTISpro.IIS\Settings'
+# List of deployers to use. The minimum for a web app
+# is a storage deployer and an IIS deployer.
+deployers:
+  # The app deployer has no configuration at the moment
+  # but is the MOST important one as it provides storage
+  # for the artifact itself, log, and temporary files.
+  # Current there is a tight couple between this service
+  # and the iischef base implementation, so you CANNOT
+  # avoid using it.
+  app:
+    type: 'app'
+    # You can add known privileges to the application user, valid privileges are SeCreateSymbolicLinkPrivilege, SeDebugPrivilege, SeBatchLogonRight
+    privileges:
+     - SeCreateSymbolicLinkPrivilege
+    # Application user will be enroled in the given groups
+    user_groups:
+     # A group given a SID (you can use well-known SID here such as S-1-5-32-558 -> Performance monitor users )
+     - 'S-1-5-32-558'
+     # Specify a domain and group name
+     - 'MYDOMAIN\mygroupname'
+     # Or just the group name
+     - 'mygroupname'
+  # The IIS deployer can be used to setup IIS sites
+  # on top of our artifact
+  iis:
+    type: 'iis'
+    # Configure the list of allowed server variables in IIS Rewrite
+    allowedServerVariables:
+      - XHTTP_HEADER
+      - HTTP_HEADER2
+    pools:
+    # If no specific pool is set for a binding, the first one
+    # in the list will be used.
+      default:
+        Enable32BitAppOnWin64: true
+        AutoStart: true
+        ManagedPipelineMode: Integrated
+        StartMode: AlwaysRunning
+        ManagedRuntimeVersion: ''
+        LoadUserProfile: true
+        CpuLimitPercent: 50
+        CpuLimitAction: ThrottleUnderLoad
+        PrivateMemoryLimitKb: 1048576‬
+    # Mount points are virtual directories. You need
+    # at least one mount point for the root application 
+    # identified with the boolean "root" attribute.
+    mounts:
+      frontend:
+        # If this is mounted on the site's root. Only one
+        # root per application.
+        root: true
+        # Relative path inside the artifact the mount should point to.
+        path: 'ETG.SABENTISpro.UI/dist'
+      backend:
+        root: false
+        path: 'ETG.SABENTISpro.IIS/'
+        # Name of the virtual directory. Must start with a slash.
+        mountpath: '/api'
+        # If available in IIS, will set the preloadEnabled configuration. With this
+        # you can then use preInitialization calls in your web.config
+        # <!--https://stackoverflow.com/questions/15348621/iis-7-5-application-initialization-for-asp-net-web-service-warmup-without-rema-->
+        # <applicationInitialization doAppInitAfterRestart="true">
+        #   <add initializationPage="/core-system/warm-up" />
+        # </applicationInitialization>
+        preloadEnabled: true
+    # Bindings are the equivalent of IIS's site bindings.
+    # They determine how your application is exposed in the network.
+    bindings:
+      local:
+        # Hostname for the binding. Leave blank for a wildcard binding.
+        hostname: 'chef.testing.framework'
+        # default to port #80
+        port: 80
+        # The available network interfaces are defined in your
+        # chef server specific configuration file. You can also
+        # use an IP address, or "*" for "All Unasigned" behviour.
+        # Use the keywork "local" here to automatically bind to
+        # the local ip (127.0.0.1) and have the hostname added
+        # to the machine's host name. addtohosts is automatically true
+        # when using  the "local" keyword.
+        interface: 'local'
+      public:
+        hostname: 'chef.testing.framework.public'
+        port: 80
+        interface: '192.168.1.35'
+      private:
+        hostname: 'chef.testing.framework.private'
+        port: 80
+        interface: '127.0.0.1'
+        # Will add an entry to the system hosts file for the specified hostname
+        # and port.
+        addtohosts: true
+      withssl:
+        hostname: 'mysecuresite.com'
+        port: 443
+        # type defaults to http
+        type: 'https'
+        # Require server name identification
+        require_server_name_identification: false
+        # SSL certificate from friendly name already installed in local machine
+        ssl_certificate_friendly_name: 'The Name of My SSL certificate'
+      withssl2:
+        hostname: 'mysecuresite.com'
+        port: 443
+        # type defaults to http
+        type: 'https'
+        # Chef will automatically handler certificate provisioning using let's encrypt
+        ssl_letsencrypt: true
+    # Use Cdn bindings when you have multiple applications
+    # in a server that need to share a common CDN domain.
+    cdn_bindings:
+      # Take care! Conflicting bindings between applications are NOT resolved. Also, bindings
+      # are not removed during app uninstall process.
+      cdn: { hostname: 'cdn-ws003.sabentis.com', port: 80, interface: 'public' }
+      cdnssl: { hostname: 'ws003-universitatpolit.netdna-ssl.com', port: 80, interface: 'public' }
+      local: { hostname: 'local.chefcdn.com', port: 80, interface: 'local' }
+    cdn_mounts:
+      # Take care! Conflicting bindings between applications are NOT resolved.
+      cdn: { type: 'directory', match: 'mytestapplicationdirectory', destination: 'chef.testing.framework' }
+  # The php deployer is used to deploy a php runtime
+  php:
+    type: 'php'
+    runtime:
+     # Use 'dl' type operations to download and extract remote packages. Use the maps property
+     # to tell chef what files to extract and into what location.
+     - {type: 'dl', uri: 'http://windows.php.net/downloads/releases/archives/php-7.0.15-nts-Win32-VC14-x64.zip', maps: {'*' : 'php/'}}
+     - {type: 'dl', uri: 'http://windows.php.net/downloads/pecl/releases/xdebug/2.5.1/php_xdebug-2.5.1-7.0-nts-vc14-x64.zip', maps: {'php_xdebug.dll':'php/ext/php_xdebug.dll'}}
+     - {type: 'dl', uri: 'https://ci.appveyor.com/api/buildjobs/7b47bfc24eynberd/artifacts/x64%2FRelease%2Fphp_tideways.dll' , maps: {'x64%2FRelease%2Fphp_tideways.dll':'php/ext/php_tideways.dll'}}
+     - {type: 'dl', uri: 'http://windows.php.net/downloads/pecl/releases/pcs/1.3.3/php_pcs-1.3.3-7.0-nts-vc14-x64.zip', maps: {'php_pcs.dll':'php/ext/php_pcs.dll'}}
+     - {type: 'dl', uri: 'http://windows.php.net/downloads/pecl/releases/igbinary/2.0.1/php_igbinary-2.0.1-7.0-nts-vc14-x64.zip', maps: {'php_igbinary.dll': 'php/ext/php_igbinary.dll'}}
+     - {type: 'dl', uri: 'http://windows.php.net/downloads/pecl/releases/couchbase/2.2.4/php_couchbase-2.2.4-7.0-nts-vc14-x64.zip', maps: {'php_couchbase.dll':'php/ext/php_couchbase.dll', 'libcouchbase.dll':'php/libcouchbase.dll'}}
+     - {type: 'dl', uri: 'http://windows.php.net/downloads/pecl/releases/pdo_sqlsrv/4.1.7preview/php_pdo_sqlsrv-4.1.7preview-7.0-nts-vc14-x64.zip', maps: {'php_pdo_sqlsrv.dll': 'php/ext/php_pdo_sqlsrv.dll'}}
+     - {type: 'dl', uri: 'http://windows.php.net/downloads/pecl/releases/wincache/2.0.0.8/php_wincache-2.0.0.8-7.0-nts-vc14-x64.zip', maps: {'php_wincache.dll': 'php/ext/php_wincache.dll'}}
+     # Download and configure the CACERT.pem file
+     - {type: 'dl', uri: 'http://curl.haxx.se/ca/cacert.pem', maps: {'cacert.pem': '/cacert.pem'}}
+     - {type: 'file', 'action':'copy', 'source':'php/php.ini-production', 'destination':'php/php.ini'}
+     - {type: 'ini', 'key':curl.cainfo, 'value':'%RUNTIME%/cacert.pem'}
+     - {type: 'ini', 'key':openssl.cafile, 'value':'%RUNTIME%/cacert.pem'}
+     # Set the extension dir
+     - {type: 'ini', 'key':extension_dir, 'value':'%RUNTIME%/php/ext'}
+     # Configure the extensions in php.ini
+     - {type: 'ini', multivalue: true, 'key':extension, 'value':php_intl.dll}
+     - {type: 'ini', multivalue: true, 'key':extension, 'value':php_bz2.dll}
+     - {type: 'ini', multivalue: true, 'key':extension, 'value':php_curl.dll}
+     - {type: 'ini', multivalue: true, 'key':extension, 'value':php_enchant.dll}
+     - {type: 'ini', multivalue: true, 'key':extension, 'value':php_exif.dll}
+     - {type: 'ini', multivalue: true, 'key':extension, 'value':php_fileinfo.dll}
+     - {type: 'ini', multivalue: true, 'key':extension, 'value':php_gettext.dll}
+     - {type: 'ini', multivalue: true, 'key':extension, 'value':php_gd2.dll}
+     - {type: 'ini', multivalue: true, 'key':extension, 'value':php_mbstring.dll}
+     - {type: 'ini', multivalue: true, 'key':extension, 'value':php_openssl.dll}
+     - {type: 'ini', multivalue: true, 'key':extension, 'value':php_soap.dll}
+     - {type: 'ini', multivalue: true, 'key':extension, 'value':php_xmlrpc.dll}
+     - {type: 'ini', multivalue: true, 'key':extension, 'value':php_wincache.dll}
+     - {type: 'ini', multivalue: true, 'key':extension, 'value':php_pdo_sqlsrv.dll}
+     - {type: 'ini', multivalue: true, 'key':extension, 'value':php_pcs.dll}
+     - {type: 'ini', multivalue: true, 'key':extension, 'value':php_igbinary.dll}
+     - {type: 'ini', multivalue: true, 'key':extension, 'value':php_couchbase.dll}
+     - {type: 'ini', multivalue: true, 'key':extension, 'value':php_tideways.dll}
+     - {type: 'ini', multivalue: true, 'key':extension, 'value':php_com_dotnet.dll}
+     - {type: 'ini', multivalue: true, 'key':extension, 'value':php_openssl.dll}
+     - {type: 'ini', multivalue: true, 'key':zend_extension, 'value':php_opcache.dll}
+     # Runtime directories
+     - {type: 'ini', 'key':error_log, 'value':'%LOG%/php_error_%DEPLOYMENTID%.log', ensureDir: 'file'}
+     - {type: 'ini', 'key':upload_tmp_dir, 'value':'%TEMP%/upload_temp_dir', ensureDir: 'dir'}
+     - {type: 'ini', 'key':xdebug.profiler_output_dir, 'value':'%LOG%/xdebug_profile', ensureDir: 'dir'}
+     - {type: 'ini', 'key':xdebug.trace_output_dir, 'value':'%LOG%/xdebug_trace', ensureDir: 'dir'}
+     - {type: 'ini', 'key':xdebug.remote_log, 'value':'%LOG%/remote_%DEPLOYMENTID%.log', ensureDir: 'file'}
+     - {type: 'ini', 'key':xdebug.trace_output_name, 'value':'trace.%u'}
+     - {type: 'ini', 'key':xdebug.profiler_output_name, 'value':'profile.%u'}
+     - {type: 'ini', 'key':session.save_path, 'value':'%TEMP%/session_save_path/', ensureDir: 'file'}
+     - {type: 'ini', 'key':date.timezone, 'value':'Europe/Madrid'} 
+      # Wincache settings.
+     - {type: 'ini', 'key':wincache.fcenabled, 'value': 0}
+     - {type: 'ini', 'key':wincache.ucenabled, 'value': 1}
+     - {type: 'ini', 'key':wincache.fcachesize , 'value': 8}
+     - {type: 'ini', 'key':wincache.maxfilesize, 'value': 3000}
+     - {type: 'ini', 'key':wincache.ucachesize , 'value': 128}
+     - {type: 'ini', 'key':wincache.scachesize , 'value': 16}
+     - {type: 'ini', 'key':wincache.reroute_enabled , 'value': 0}
+     - {type: 'ini', 'key':wincache.filemapdir , 'value':'%RUNTIME%/wincache_filemap', ensureDir: 'dir'}
+     - {type: 'ini', 'key':wincache.enablecli , 'value':'On'}
+     # Tideways settings.
+     - {type: 'ini','key':tideways.api_key , 'value': 'J3y64K4zDvflMA87'}
+     - {type: 'ini','key':tideways.auto_prepend_library , 'value': 0}
+     # Generic PHP settings.
+     - {type: 'ini','key':fastcgi.impersonate , 'value': 1}
+     - {type: 'ini','key':cgi.fix_pathinfo , 'value': 1}
+     - {type: 'ini','key':cgi.force_redirect , 'value': 0}
+     - {type: 'ini','key':fastcgi.logging , 'value': 0}
+     - {type: 'ini','key':realpath_cache_size , 'value': '256K'}
+     - {type: 'ini','key':realpath_cache_ttl , 'value': 3600}
+     - {type: 'ini','key':max_input_vars , 'value': 8000}
+     - {type: 'ini','key':memory_limit , 'value': 2048M}
+     - {type: 'ini','key':max_input_vars , 'value': 8000}
+     - {type: 'ini','key':max_execution_time , 'value': 600}
+     - {type: 'ini','key':upload_max_filesize , 'value': 32M}
+     - {type: 'ini','key':post_max_size , 'value': 32M}
+     # Opcache configuration.
+     - {type: 'ini','key':opcache.enable , 'value': 1}
+     - {type: 'ini','key':opcache.memory_consumption , 'value': 256}
+     - {type: 'ini','key':opcache.max_accelerated_files , 'value': 25000}
+     - {type: 'ini','key':opcache.revalidate_freq , 'value': 3600}
+     - {type: 'ini','key':opcache.interned_strings_buffer , 'value': 16}
+     - {type: 'ini','key':opcache.validate_timestamps , 'value': 0}
+     - {type: 'ini','key':opcache.enable_cli , 'value': 1}
+     - {type: 'ini','key':opcache.file_cache_only , 'value': 0}
+     - {type: 'ini','key':opcache.file_cache , 'value':'%RUNTIME%/opcache_filecache', ensureDir: 'dir'}
+    # List of environment variables. This will be consistently configured
+    # in the PHP runtime through the auto_prepend ini directive, so that all environments
+    # (fastcgi + console) receive this variables.
+    environmentVariables:
+      'ENV1': 'ENV1'
+      'ENV2': 'ENV2'
+      'ENV3': 'ENV3'
+    # Files relative to the artifact root
+    # that should be included on every PHP request
+    autoprependFiles:
+      - 'web/file1.php'
+      - 'web/file2.php'
+    # FastCgi activity timeout
+    activityTimeout: 3600
+    # FastCgi request timeout
+    requestTimeout: ''
+    # FastCgi max instances
+    maxInstances: ''
+    # FastCgi instance max requests
+    instanceMaxRequests: ''
+# Services describes external services that need
+# to be provisioned when deploying (i.e. disk storage,
+# a database backend, etc.)
+services:
+  # storage service provides disk storage
+  # for the application, and optionaly mounts
+  # this on the web-app using junctions.
+  # Each application has assigned a unique storage
+  # location. The "name" of the storage is used
+  # as a base directory.
+  # exposed to application as ['services']['service-name']['path']
+  disk:
+    type: 'disk'
+    id: 'contents'
+    # Symlink/junction this to a directory in the web application
+    mounts:
+       files:  { path: 'files' , mountpath: 'sites/default/' }
+       # no mountpath required.
+       files2: { path: 'files2' }
+  # Sql server must be setup in the chef
+  # server configuration file.
+  sqlsrv:
+    type: 'sqlsrv'
+    recovery-model: 'Simple'
+  # Inform about any local couchbase buckets.
+  couchbase-cache:
+    type: 'couchbase'
+  # Use this to deploy local scheduled tasks
+  cronA:
+    type: 'scheduler'
+    command: 'wget http://www.google.com/'
+    # Execution frequency in minutes.
+    frequency: 5
+  cronB:
+    type: 'scheduler'
+    commands:
+     - 'php bin\magento cron:run'
+     - 'php bin\magento setup:cron:run'
+     - 'php update\cron.php'
+     # Effectively these commands end up in a powershell script,
+     # so you can call other powershell or plain scripts from here
+     # that are inside your artifact.
+     - 'scripts\MyCustomScript.ps1'
+    frequency: 5
+    # The identity for the task, will default to "SYSTEM".
+    # Use the reserved word "auto" (lowercase) to override
+    # identity settings and use the ones generated for the application.
+    taskUserId: 'SYSTEM'
+    # Optional, only for password based logon. Will be overriden
+    # when using "auto" in taskUserId.
+    taskUserPassword: 'the-password'
+    # taskLogonType (integer) as defined in the
+    # Microsoft.Win32.TaskScheduler.TaskLogonType
+    taskLogonType: 2

@@ -1,0 +1,8 @@
+﻿scope-environment-regex: local
+deployers:
+  php:
+    type: 'php'
+    runtime:
+     - {type: 'ini', multivalue: true, 'key':zend_extension, 'value':php_xdebug.dll}
+runtime_overrides:
+  "overriden" : "my_overriden_local_setting"
