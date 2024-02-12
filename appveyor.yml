@@ -27,7 +27,7 @@ install:
 build_script:
   - ps: Start-Transcript -path C:\console.txt -append
   - ps: |
-      $filePath = "$Env:APPVEYOR_BUILD_FOLDER\iischef.cmdlet\ChefCmdletBase.cs";
+      $filePath = "$Env:APPVEYOR_BUILD_FOLDER\iischef.core\BuildVersion.cs";
       $content = Get-Content $filePath -Raw;
       $updatedContent = $content -replace '\{BUILDVERSION\}', $Env:APPVEYOR_BUILD_VERSION;
       Set-Content $filePath -Value $updatedContent;

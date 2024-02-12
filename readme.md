@@ -1,8 +1,4 @@
-[TOC]
-
 # IIS Chef
-
-## What it is
 
 A set of C# based Cmdlets for powershell aimed at supporting Internet Information Services based deployments, including basic Let's Encrypt certificate renewal support targeted at a very specific scenario: using Central Certificate Store with load balanced web heads.
 
@@ -20,7 +16,7 @@ Use the following commands to install the Chef cmdlets system wide:
 
 ```bash
 mkdir %CD%\cmdlet
-powershell -command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; (New-Object Net.WebClient).DownloadFile('https://XX/iischef.cmdlet.zip?branch=3.x','%CD%\chef_cmdlet.zip')"
+powershell -command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; (New-Object Net.WebClient).DownloadFile('https://ci.appveyor.com/project/david-garcia-garcia/iischef/artifacts/iischef.cmdlet.zip?branch=3.x','%CD%\chef_cmdlet.zip')"
 powershell -command "(new-object -com shell.application).namespace('%CD%\cmdlet').CopyHere((new-object -com shell.application).namespace('%CD%\chef_cmdlet.zip').Items(),16)"
 set DESTINATION=%ProgramFiles%\WindowsPowerShell\Modules\iischef
 mkdir "%DESTINATION%"

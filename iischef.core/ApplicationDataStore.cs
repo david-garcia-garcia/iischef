@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using System;
 using System.IO;
-using System.Security.Cryptography;
 
 namespace iischef.core
 {
@@ -29,12 +28,6 @@ namespace iischef.core
             if (!File.Exists(ApplicationDataStore.StorePath))
             {
                 this.AppSettings = new AppSettings();
-
-                if (this.TryLoadPreviousSettings(out var previousPfxPassword))
-                {
-                    this.AppSettings.PfxPassword = previousPfxPassword;
-                }
-
                 return;
             }
 
@@ -73,32 +66,5 @@ namespace iischef.core
             Path.Combine(
                 Environment.ExpandEnvironmentVariables("%ProgramData%"),
                 "iischefsettings.json");
-
-        private bool TryLoadPreviousSettings(out string previousPfxPassword)
-        {
-            previousPfxPassword = null;
-
-            try
-            {
-                // Try to migrate old settings
-                var oldPath = Path.Combine(
-                    Environment.ExpandEnvironmentVariables("%ProgramData%"),
-                    "ccsprivatekey");
-
-                if (File.Exists(oldPath))
-                {
-                    var contents = File.ReadAllBytes(oldPath);
-                    byte[] decryptedData = ProtectedData.Unprotect(contents, null, DataProtectionScope.LocalMachine);
-                    string jsonData = System.Text.Encoding.UTF8.GetString(decryptedData);
-                    previousPfxPassword = Newtonsoft.Json.JsonConvert.DeserializeObject<string>(jsonData);
-                    return true;
-                }
-            }
-            catch (Exception e)
-            {
-            }
-
-            return false;
-        }
     }
 }
