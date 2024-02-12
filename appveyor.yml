@@ -1,0 +1,115 @@
+clone_depth: 8
+image:
+  - Visual Studio 2022
+install:
+  - ps: $Env:APPVEYOR_REPO_COMMIT_MESSAGE_FULL = "$env:APPVEYOR_REPO_COMMIT_MESSAGE $env:APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED".TrimEnd();
+  - ps: |
+       echo "Running on cloud $Env:APPVEYOR_BUILD_WORKER_CLOUD";
+       echo "Running on image $Env:APPVEYOR_BUILD_WORKER_IMAGE";
+       $cpu = Get-WmiObject Win32_ComputerSystem | Select NumberOfProcessors, NumberOfLogicalProcessors, Name, Manufacturer, Model;
+       $clockSpeed = Get-WmiObject -Class Win32_Processor | Select CurrentClockSpeed;
+       $memoryGb = Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property capacity -Sum | Foreach {"{0:N2}" -f ([math]::round(($_.Sum / 1GB),2))};
+       echo "NumberOfLogicalProcessors: $($cpu.NumberOfLogicalProcessors)";
+       echo "NumberOfProcessors: $($cpu.NumberOfProcessors)";
+       echo "System Memory: $memoryGb";
+       echo "CPU clock speed: $($clockSpeed.CurrentClockSpeed)Hz";
+       echo "Computer Name: $($cpu.Name)";
+       echo "Manufacturer: $($cpu.Manufacturer)";
+       echo "Model: $($cpu.Model)";
+  - cmd: mkdir "c:\testlogs"
+  - ps: |
+      If ($Env:APPVEYOR_REPO_COMMIT_MESSAGE -match 'rdpstart') {
+        $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+      }
+  - cmd: nuget restore iischef.sln 2>&1 > C:\TestLogs\nuget-restore.log
+  - ps: Start-Transcript -path C:\console.txt -append
+  - ps: Remove-WebSite -Name "Default Web Site"
+build_script:
+  - ps: Start-Transcript -path C:\console.txt -append
+  - ps: |
+      $filePath = "$Env:APPVEYOR_BUILD_FOLDER\iischef.cmdlet\ChefCmdletBase.cs";
+      $content = Get-Content $filePath -Raw;
+      $updatedContent = $content -replace '\{BUILDVERSION\}', $Env:APPVEYOR_BUILD_VERSION;
+      Set-Content $filePath -Value $updatedContent;
+  - cmd: MSBuild.exe iischef.sln /m /t:rebuild /p:Configuration=Release /consoleloggerparameters:ErrorsOnly 2>&1 > "c:/msbuild_console.log"
+  - cmd: choco install -y --ignorechecksum iis-arr 2>&1 > C:\TestLogs\choco-install-iis-arr.log
+  - cmd: choco install -y --ignorechecksum 7zip.install 2>&1 > C:\TestLogs\choco-install-7zip.install.log
+  - ps: Enable-WindowsOptionalFeature -FeatureName "IIS-CertProvider" -Online
+  - ps: Enable-WindowsOptionalFeature -FeatureName "IIS-StaticContent" -Online
+  - ps: Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\IIS\CentralCertProvider" -Name "PollingInterval" -Value 15;
+  - ps: Start-Service w3svc
+  - cmd: sc config W3SVC start=auto
+  - ps: |
+      If ($Env:APPVEYOR_REPO_COMMIT_MESSAGE -match 'rdpbuild') {
+        $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+      }
+  - cmd: 7z a -r iischef.cmdlet.zip .\iischef.cmdlet\bin\Release\*
+  - cmd: COPY iischef.cmdlet.zip %APPVEYOR_BUILD_FOLDER%\chocolatey\tools\iischef.cmdlet.zip
+  - cmd: cd %APPVEYOR_BUILD_FOLDER%\chocolatey
+  - cmd: 7z x "%APPVEYOR_BUILD_FOLDER%\chocolatey\tools\iischef.cmdlet.zip" -o"%PROGRAMFILES%\WindowsPowerShell\Modules\iischef"
+  # - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1')) #Para bloquear y acceder por 
+  - ps: Import-Module "$($Env:PROGRAMFILES)\WindowsPowerShell\Modules\iischef"
+  - ps: Invoke-IISChefSetupCcs -CertStoreLocation "c:\certificates"
+  - ps: Invoke-IISChefSetupAcmeChallenge
+  - ps: |
+       $version = $Env:APPVEYOR_REPO_TAG_NAME;
+       if ([string]::IsNullOrEmpty($Env:tagName)) {
+         $version = $Env:APPVEYOR_BUILD_VERSION;
+       }
+       ((Get-Content -path iischef.nuspec -Raw) -replace '{VERSION}', $version) | Set-Content -Path iischef.nuspec;
+       choco pack;
+       $path = "$Env:APPVEYOR_BUILD_FOLDER\chocolatey"
+       $packagePath = (Get-ChildItem -Path $path -Recurse -Filter "*.nupkg").FullName;
+       $packageName = (Get-ChildItem -Path $path -Recurse -Filter "*.nupkg").Name;
+       if([System.IO.File]::Exists($packagePath)) {
+         Push-AppveyorArtifact $packagePath -FileName $packageName;
+         choco apikey --key $Env:CHOCOKEY --source https://push.chocolatey.org/
+         if (-Not([string]::IsNullOrEmpty($Env:APPVEYOR_REPO_TAG_NAME))) {
+           #choco push $packageName --source https://push.chocolatey.org/;
+         }
+       }
+test_script:
+  - cmd: 'echo %APPVEYOR_BUILD_FOLDER%'
+  # - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1')) #Para bloquear y acceder por escritorio remoto
+  # - cmd: '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\MSTest.exe" /testcontainer:iischef.tests\bin\Debug\iischeftests.dll /noisolation'
+  - ps: |
+      If ($Env:APPVEYOR_REPO_COMMIT_MESSAGE_FULL -imatch 'notest') {
+         Write-Output 'Tests skipped';
+         appveyor AddMessage "[$(Get-Date -format 'HH:mm:ss')] Tests skipped" -Category Warning
+      }
+      else {
+        $xunitPath = "$($Env:USERPROFILE)\.nuget\packages\xunit.runner.console\2.4.2\tools\net462\xunit.console.exe";
+        $testDll = "$($Env:APPVEYOR_BUILD_FOLDER)\iischef.tests\bin\Release\iischeftests.dll";
+        &"$xunitPath" "$testDll" -maxthreads "1" -appveyor -html "C:\TestLogs\TestResult.html" 2>&1 > "C:\TestLogs\XUNnit.txt"
+        echo "XUNIT tests finished";
+        if ($LASTEXITCODE -ne 0) {
+          if ($Env:APPVEYOR_REPO_COMMIT_MESSAGE -match 'rdptestfail') {
+             $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+          }
+          throw "($LASTEXITCODE) xunit tests failed. See TestResult.html for details.";
+        }
+        $Error.Clear(); $global:LASTEXITCODE = $null;
+      }
+  - ps: |
+      If ($Env:APPVEYOR_REPO_COMMIT_MESSAGE -match 'rdptest') {
+        $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+      }
+on_failure:
+  - ps: |
+      $now=get-date
+      $startdate=$now.addminutes(-60);
+      $el = get-eventlog -log System -After $startdate -EntryType Error, Warning;
+      $el | export-clixml C:\TestLogs\WindowsEventViewerLog_system.txt;
+      $el = get-eventlog -log Application -After $startdate -EntryType Error, Warning;
+      $el | export-clixml C:\TestLogs\WindowsEventViewerLog_application.txt;
+  # Copy the published application, only in case of failure
+  - cmd: 7z a -r C:\_webs.zip C:\_webs\* > null & exit 0
+on_finish:
+  - cmd: copy C:\console.txt C:\TestLogs\console.txt
+  - cmd: copy C:\msbuild_console.txt C:\TestLogs\msbuild_console.txt
+  - cmd: 7z a -r C:\TestLogs.zip c:\TestLogs\* > null
+  - ps: Push-AppveyorArtifact "C:\TestLogs.zip" -FileName "TestLogs.zip"
+  - ps: if([System.IO.File]::Exists("c:\_webs.zip")) { Push-AppveyorArtifact "C:\_webs.zip" -FileName "_webs.zip" }
+artifacts:
+  - path: iischef.cmdlet.zip
+    name: iischef.cmdlet

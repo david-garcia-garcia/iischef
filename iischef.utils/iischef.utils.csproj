@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{06F21F62-D8AA-49D2-9E76-9A7CF74C920E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>iischef.utils</RootNamespace>
+    <AssemblyName>iischef.utils</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>bin\x64\Release\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Web.Administration, Version=7.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Windows\System32\inetsrv\Microsoft.Web.Administration.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Web.Management, Version=7.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Windows\System32\inetsrv\Microsoft.Web.Management.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.DirectoryServices.AccountManagement" />
+    <Reference Include="System.DirectoryServices.Protocols" />
+    <Reference Include="System.IdentityModel" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Advapi32Extern.cs" />
+    <Compile Include="AppPoolActionType.cs" />
+    <Compile Include="CancellationTokenWrapper.cs" />
+    <Compile Include="CertificateImportUtils.cs" />
+    <Compile Include="DefenderUtils.cs" />
+    <Compile Include="DomainUserParser.cs" />
+    <Compile Include="DPapiStore.cs" />
+    <Compile Include="ErrorRecordException.cs" />
+    <Compile Include="GlobalCancellationTokenManager.cs" />
+    <Compile Include="CertificatePaths.cs" />
+    <Compile Include="CompressionUtils.cs" />
+    <Compile Include="ConfigurationElementUtils.cs" />
+    <Compile Include="ConsoleCommand.cs" />
+    <Compile Include="HostnameValidator.cs" />
+    <Compile Include="IISFeatureNames.cs" />
+    <Compile Include="OperationAbortedByUserException.cs" />
+    <Compile Include="PasswordHelper.cs" />
+    <Compile Include="PowerShellExtensions.cs" />
+    <Compile Include="PsSession.cs" />
+    <Compile Include="ServicePointManagerExtensions.cs" />
+    <Compile Include="CustomWebException.cs" />
+    <Compile Include="ExtensionHelpers.cs" />
+    <Compile Include="FileSystemCache.cs" />
+    <Compile Include="Reader.cs" />
+    <Compile Include="StreamReaderLineInput.cs" />
+    <Compile Include="StringExtensionMethods.cs" />
+    <Compile Include="SymlinkUtils.cs" />
+    <Compile Include="Towel.cs" />
+    <Compile Include="UnitTestDetector.cs" />
+    <Compile Include="UtilsAccountManagement.cs" />
+    <Compile Include="UtilsAcl.cs" />
+    <Compile Include="UtilsAppPool.cs" />
+    <Compile Include="UtilsCertificate.cs" />
+    <Compile Include="UtilsEncryption.cs" />
+    <Compile Include="ExtensionUtils.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UtilsIis.cs" />
+    <Compile Include="UtilsJunction.cs" />
+    <Compile Include="UtilsProcess.cs" />
+    <Compile Include="UtilsProcessPort.cs" />
+    <Compile Include="UtilsRegistry.cs" />
+    <Compile Include="UtilsSmb.cs" />
+    <Compile Include="UtilsSystem.cs" />
+    <Compile Include="WindowsAccount\PrivilegeConstants.cs" />
+    <Compile Include="WindowsAccount\UtilsWindowsAccounts.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="_Resources\Handle.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\iischef.logger\iischef.logger.csproj">
+      <Project>{1bf764ea-4f35-4eca-ac17-515142199b17}</Project>
+      <Name>iischef.logger</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="_Resources\Handle64.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Dynamitey">
+      <Version>2.0.10.189</Version>
+    </PackageReference>
+    <PackageReference Include="fasterflect">
+      <Version>3.0.0</Version>
+    </PackageReference>
+    <PackageReference Include="ManagedOpenSsl64">
+      <Version>0.6.1.3</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Management.Infrastructure">
+      <Version>3.0.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.PowerShell.5.ReferenceAssemblies">
+      <Version>1.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="NCode.ReparsePoints">
+      <Version>1.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>13.0.3</Version>
+    </PackageReference>
+    <PackageReference Include="Security.Cryptography">
+      <Version>1.7.2</Version>
+    </PackageReference>
+    <PackageReference Include="StyleCop.Analyzers">
+      <Version>1.1.118</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="System.Net.Http">
+      <Version>4.3.4</Version>
+    </PackageReference>
+    <PackageReference Include="xunit">
+      <Version>2.4.2</Version>
+    </PackageReference>
+    <PackageReference Include="xunit.runner.console">
+      <Version>2.4.2</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
