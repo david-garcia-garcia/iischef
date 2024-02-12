@@ -54,7 +54,7 @@ Specifies a password for the private key if one exists. If specified, this passw
 
 Use this parameter to recreate the default local account used to access the certificate store. You can only set this flag if the currently configured account is the default account (iis_ccs_store) or you specify explicitly that as a username through the -Username argument.
 
-**SwitchParameter InstallLetsEncryptChainToCertUser **
+**SwitchParameter InstallLetsEncryptChainToCertUser**
 
 Will try to add to the Let's Encrypt intermediate certificates to the account used for CCS. This is not needed for CCS to work, but servers as a fix to this issue: 
 
