@@ -174,7 +174,7 @@ namespace iischef.core
             if (setCertificatePassword && string.IsNullOrWhiteSpace(args.PrivateKeyPassword))
             {
                 logger.LogWarning(
-                    false, "You cannot set an empty password for the private key using this command. Use IIS interface to do so.");
+                    false, "You cannot set an empty password for the private key using this command. Use IIS interface to complete the process.");
             }
 
             if (setCertificatePassword)

@@ -19,13 +19,13 @@ A set of C# based Cmdlets for powershell aimed at supporting Internet Informatio
 Use the following commands to install the Chef cmdlets system wide:
 
 ```bash
-mkdir %CD%\cmdlet
-powershell -command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; (New-Object Net.WebClient).DownloadFile('https://XX/iischef.cmdlet.zip?branch=3.x','%CD%\chef_cmdlet.zip')"
-powershell -command "(new-object -com shell.application).namespace('%CD%\cmdlet').CopyHere((new-object -com shell.application).namespace('%CD%\chef_cmdlet.zip').Items(),16)"
-set DESTINATION=%ProgramFiles%\WindowsPowerShell\Modules\iischef
-mkdir "%DESTINATION%"
-powershell -command "(new-object -com shell.application).namespace('%DESTINATION%').CopyHere((new-object -com shell.application).namespace('%CD%\chef_cmdlet.zip').Items(),16)"
-del %CD%\chef_cmdlet.zip
+$ZipFilePath = Join-Path -Path $env:TEMP -ChildPath "chef_cmdlet.zip"
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+Invoke-WebRequest "https://ci.appveyor.com/api/projects/david-garcia-garcia/iischef/artifacts/iischef.cmdlet.zip?branch=1.x" -OutFile $ZipFilePath
+$Destination = Join-Path -Path $env:ProgramFiles -ChildPath "WindowsPowerShell\Modules\iischef"
+New-Item -Path $Destination -ItemType Directory -Force | Out-Null
+Expand-Archive -Path $ZipFilePath -DestinationPath $Destination -Force
+Remove-Item -Path $ZipFilePath -Force
 ```
 
 ## Command Reference

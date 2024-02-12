@@ -48,7 +48,7 @@ namespace iischef.core.IIS
 
             if (throwIfMissing)
             {
-                throw new Exception($"ACME Shared Site not yet setup. Run IISChefSetupAcmeChallenge first or look for the IIS site {AcmeChallengeSiteName}");
+                throw new BusinessRuleException($"ACME Shared Site not yet setup. Run IISChefSetupAcmeChallenge first or look for the IIS site {AcmeChallengeSiteName}");
             }
 
             return null;
