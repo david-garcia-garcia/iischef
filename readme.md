@@ -1,8 +1,6 @@
-[TOC]
+[![Build status](https://ci.appveyor.com/api/projects/status/lnn9810vxfgx5mh7/branch/master?svg=true)](https://ci.appveyor.com/project/david-garcia-garcia/iischef/branch/1.x)
 
 # IIS Chef
-
-## What it is
 
 A set of C# based Cmdlets for powershell aimed at supporting Internet Information Services based deployments, including basic Let's Encrypt certificate renewal support targeted at a very specific scenario: using Central Certificate Store with load balanced web heads.
 

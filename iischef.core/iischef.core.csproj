@@ -78,6 +78,7 @@
     <Compile Include="AppSettings.cs" />
     <Compile Include="BindingRedirectHandler.cs" />
     <Compile Include="ApplicationDataStore.cs" />
+    <Compile Include="BuildVersion.cs" />
     <Compile Include="CmdRenewSsl.cs" />
     <Compile Include="CmdSetupCentralCertificateStoreArgs.cs" />
     <Compile Include="ConsoleUtils.cs" />

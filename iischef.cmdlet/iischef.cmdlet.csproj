@@ -61,6 +61,7 @@
     <Compile Include="IISChefCcsChangePrivateKeyPassword.cs" />
     <Compile Include="IISChefPoolEnvUpsert.cs" />
     <Compile Include="IISChefCcsCleanup.cs" />
+    <Compile Include="IISChefVersion.cs" />
     <Compile Include="IISChefSyncCertsToSite.cs" />
     <Compile Include="IISChefSetupAcmeChallenge.cs" />
     <Compile Include="IISChefGetCert.cs" />

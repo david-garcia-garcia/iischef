@@ -106,7 +106,7 @@ namespace iischef.core
                 // Generate a password if it does not have one
                 if (appSettings.AppSettings.CcsAccountPassword == null)
                 {
-                    appSettings.AppSettings.CcsAccountPassword = PasswordHelper.GenerateRandomPassword(15);
+                    appSettings.AppSettings.CcsAccountPassword = PasswordHelper.GenerateRandomPassword(20);
                 }
 
                 if ((args.RegenerateStoreAccount == true || !localUserExists))

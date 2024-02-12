@@ -28,8 +28,6 @@ namespace iischef.cmdlet
 
         protected override void ProcessRecord()
         {
-            this.WriteObject("Build: {BUILDVERSION}");
-
             var logger = ConsoleUtils.GetApplicationForConsole();
             
             ConsoleUtils.RunCode(logger, () =>
