@@ -27,11 +27,11 @@ install:
 build_script:
   - ps: Start-Transcript -path C:\console.txt -append
   - ps: |
-      $filePath = "$Env:APPVEYOR_BUILD_FOLDER\iischef.cmdlet\ChefCmdletBase.cs";
+      $filePath = "$Env:APPVEYOR_BUILD_FOLDER\iischef.core\BuildVersion.cs";
       $content = Get-Content $filePath -Raw;
       $updatedContent = $content -replace '\{BUILDVERSION\}', $Env:APPVEYOR_BUILD_VERSION;
       Set-Content $filePath -Value $updatedContent;
-  - cmd: MSBuild.exe iischef.sln /m /t:rebuild /p:Configuration=Release /consoleloggerparameters:ErrorsOnly 2>&1 > "c:/msbuild_console.log"
+  - cmd: MSBuild.exe iischef.sln /m /t:rebuild /p:Configuration=Release /consoleloggerparameters:ErrorsOnly 2>&1 > "c:\msbuild_console.log"
   - cmd: choco install -y --ignorechecksum iis-arr 2>&1 > C:\TestLogs\choco-install-iis-arr.log
   - cmd: choco install -y --ignorechecksum 7zip.install 2>&1 > C:\TestLogs\choco-install-7zip.install.log
   - ps: Enable-WindowsOptionalFeature -FeatureName "IIS-CertProvider" -Online
@@ -106,7 +106,7 @@ on_failure:
   - cmd: 7z a -r C:\_webs.zip C:\_webs\* > null & exit 0
 on_finish:
   - cmd: copy C:\console.txt C:\TestLogs\console.txt
-  - cmd: copy C:\msbuild_console.txt C:\TestLogs\msbuild_console.txt
+  - cmd: copy C:\msbuild_console.log C:\TestLogs\msbuild_console.log
   - cmd: 7z a -r C:\TestLogs.zip c:\TestLogs\* > null
   - ps: Push-AppveyorArtifact "C:\TestLogs.zip" -FileName "TestLogs.zip"
   - ps: if([System.IO.File]::Exists("c:\_webs.zip")) { Push-AppveyorArtifact "C:\_webs.zip" -FileName "_webs.zip" }
