@@ -7,6 +7,7 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
+using System.Text.RegularExpressions;
 using System.Threading;
 using iischef.logger;
 using iischef.utils;
@@ -70,6 +71,39 @@ namespace iischeftests
 
             // Default file system API does not preserve timestamps
             Assert.Equal(fileInfoCopied.LastWriteTimeUtc, fileInfo.LastWriteTimeUtc);
+        }
+
+        [Theory]
+        [InlineData(8)]
+        [InlineData(10)]
+        [InlineData(12)]
+        public void GenerateRandomPassword_ShouldCreatePasswordOfCorrectLength(int length)
+        {
+            // Arrange & Act
+            var password = PasswordHelper.GenerateRandomPassword(length);
+
+            // Assert
+            Assert.Equal(length, password.Length);
+        }
+
+        [Fact]
+        public void GenerateRandomPassword_ShouldContainAtLeastOneOfEachCharacterType()
+        {
+            // Arrange
+            var length = 10; // Length is arbitrary but must be at least 4
+            var password = PasswordHelper.GenerateRandomPassword(length);
+
+            // Act
+            bool containsLowercase = password.Any(char.IsLower);
+            bool containsUppercase = password.Any(char.IsUpper);
+            bool containsDigit = password.Any(char.IsDigit);
+            bool containsSpecial = Regex.IsMatch(password, "[!@#$%&*]");
+
+            // Assert
+            Assert.True(containsLowercase, "Password does not contain at least one lowercase letter.");
+            Assert.True(containsUppercase, "Password does not contain at least one uppercase letter.");
+            Assert.True(containsDigit, "Password does not contain at least one digit.");
+            Assert.True(containsSpecial, "Password does not contain at least one special character.");
         }
 
         [Fact]
