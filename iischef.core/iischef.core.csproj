@@ -83,6 +83,7 @@
     <Compile Include="CmdSetupCentralCertificateStoreArgs.cs" />
     <Compile Include="ConsoleUtils.cs" />
     <Compile Include="CmdRenewSslArgs.cs" />
+    <Compile Include="CoreUtils.cs" />
     <Compile Include="Exceptions\TransientErrorException.cs" />
     <Compile Include="IIS\AcmeChallengeSiteSetup.cs" />
     <Compile Include="IIS\AcmeProviders\AcmeSharpProviderMock.cs" />

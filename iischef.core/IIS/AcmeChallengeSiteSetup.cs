@@ -62,7 +62,7 @@ namespace iischef.core.IIS
         public void SetupAcmeChallengeSite(string sharedPath = null)
         {
             // We need the static HTTP feature to be enaBLE
-            if (!UtilsSystem.IsWindowsFeatureEnabled(IISFeatureNames.StaticContent, this.Logger))
+            if (!iischef.core.CoreUtils.IsWindowsFeatureEnabled(IISFeatureNames.StaticContent, this.Logger))
             {
                 throw new BusinessRuleException("Static content handler must be enabled in this server.");
             }

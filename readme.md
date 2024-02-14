@@ -26,6 +26,17 @@ Expand-Archive -Path $ZipFilePath -DestinationPath $Destination -Force
 Remove-Item -Path $ZipFilePath -Force
 ```
 
+## Quick Start
+
+```powershell
+# Setup the Central Certificate Store (required, even if it is already setup, so that the PrivateKey can be knwon)
+Invoke-IISChefSetupCcs -PrivateKeyPassword "myprivatekeypassword" -Username "account" -Password "accountpwd"
+# Setup the challenge site, run this on all webheads that serve the hostname/s
+Invoke-IISChefSetupAcmeChallenge -SharedPath "\\SAMBASHARE\acme"
+# Start provisioning certificates
+Invoke-IISChefGetCert -Hostname "www.mydomain.com" -Provider Acme -RegistrationMail "myemail@mycompany.com"
+```
+
 ## Command Reference
 
 ### **Invoke-IISChefSetupCcs**

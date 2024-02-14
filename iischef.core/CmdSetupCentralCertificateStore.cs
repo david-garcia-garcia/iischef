@@ -26,7 +26,7 @@ namespace iischef.core
         /// <param name="logger"></param>
         public void Run(CmdSetupCentralCertificateStoreArgs args, ILoggerInterface logger)
         {
-            if (!UtilsSystem.IsWindowsFeatureEnabled(IISFeatureNames.CentralCertificateStore, logger))
+            if (!iischef.core.CoreUtils.IsWindowsFeatureEnabled(IISFeatureNames.CentralCertificateStore, logger))
             {
                 throw new BusinessRuleException("Central certificate store not enabled on this computer.");
             }
@@ -134,7 +134,10 @@ namespace iischef.core
                 throw new BusinessRuleException($"Currently known or provided credentials for the certificate storage account '{userName}' do not work. You can use the {nameof(args.RegenerateStoreAccount)} flag to for automatic account generation.");
             }
 
-            UtilsAccountManagement.EnsureUserInGroup(userName, UtilsWindowsAccounts.WELL_KNOWN_SID_USERS, logger);
+            if (userName == CcsDefaultUserName)
+            {
+                UtilsAccountManagement.EnsureUserInGroup(userName, UtilsWindowsAccounts.WELL_KNOWN_SID_USERS, logger);
+            }
 
             if (args.InstallLetsEncryptChainToCertUser)
             {

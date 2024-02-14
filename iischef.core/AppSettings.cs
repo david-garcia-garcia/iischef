@@ -1,4 +1,6 @@
 ﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 
 namespace iischef.core
 {
@@ -7,6 +9,11 @@ namespace iischef.core
     /// </summary>
     public class AppSettings
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        public Dictionary<string, DateTime?> FeatureEnabledLastSuccess { get; set; }
+
         public string PfxPasswordEncoded { get; set; }
 
         /// <summary>
