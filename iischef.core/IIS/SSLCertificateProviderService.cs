@@ -10,7 +10,6 @@ using System.Linq;
 using System.Net;
 using System.Runtime.ExceptionServices;
 using System.Text.RegularExpressions;
-using System.Web.UI.HtmlControls;
 using Exception = System.Exception;
 
 namespace iischef.core.IIS
@@ -264,7 +263,7 @@ namespace iischef.core.IIS
 
                 if (!bindingForChallenge.Any())
                 {
-                    this.Logger.LogWarning(false, "No HTTP binding found for hostname '" + hostName + "'. A temporary binding will be set up.");
+                    this.Logger.LogWarning(false, "No HTTP binding found for hostname '" + hostName + "'. A temporary binding will be set up. If this hostname is load balanced, this binding will not be automatically added to the other nodes and might fail. A simple workaround is to add a catch-all http binding on all load balanced server.");
                     useTemporaryBinding = true;
                     UtilsIis.AddHttpBindingToSite(AcmeChallengeSiteSetup.AcmeChallengeSiteName, "*:80:" + hostName.ToLower(), "http");
                 }
