@@ -28,6 +28,18 @@ Remove-Item -Path $ZipFilePath -Force
 
 ## Quick Start
 
+Make sure you have the required IIS componentes installed.
+
+```powershell
+# Enable central certificate store if not enabled
+Enable-WindowsOptionalFeature -FeatureName "IIS-CertProvider" -Online;
+# Url rewrite an iis-arr
+choco install urlrewrite -y;
+choco install iis-arr -y;
+```
+
+Then run these commands for the initial setup.
+
 ```powershell
 # Setup the Central Certificate Store (required, even if it is already setup, so that the PrivateKey can be knwon)
 Invoke-IISChefSetupCcs -PrivateKeyPassword "myprivatekeypassword" -Username "account" -Password "accountpwd"
