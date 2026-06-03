@@ -22,6 +22,7 @@ install:
         $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
       }
   - cmd: nuget restore iischef.sln 2>&1 > C:\TestLogs\nuget-restore.log
+  - cmd: MSBuild.exe iischef.sln /t:Restore /p:Configuration=Release /v:m 2>&1 >> C:\TestLogs\nuget-restore.log
   - ps: Start-Transcript -path C:\console.txt -append
   - ps: Remove-WebSite -Name "Default Web Site"
 build_script:
@@ -78,15 +79,26 @@ test_script:
          appveyor AddMessage "[$(Get-Date -format 'HH:mm:ss')] Tests skipped" -Category Warning
       }
       else {
-        $xunitPath = "$($Env:USERPROFILE)\.nuget\packages\xunit.runner.console\2.4.2\tools\net462\xunit.console.exe";
+        # Must match xunit.runner.console version in iischeftests.csproj
+        $xunitRunnerVersion = '2.9.3';
+        $nugetRoot = if ($Env:NUGET_PACKAGES) { $Env:NUGET_PACKAGES.TrimEnd('\') } else { Join-Path $Env:USERPROFILE '.nuget\packages' };
+        $xunitPath = Join-Path $nugetRoot "xunit.runner.console\$xunitRunnerVersion\tools\net462\xunit.console.exe";
+        if (-not (Test-Path -LiteralPath $xunitPath)) {
+          throw "xunit.console.exe not found at $xunitPath. Ensure nuget/MSBuild restore ran for iischef.tests.";
+        }
         $testDll = "$($Env:APPVEYOR_BUILD_FOLDER)\iischef.tests\bin\Release\iischeftests.dll";
-        &"$xunitPath" "$testDll" -maxthreads "1" -appveyor -html "C:\TestLogs\TestResult.html" 2>&1 > "C:\TestLogs\XUNnit.txt"
+        if (-not (Test-Path -LiteralPath $testDll)) {
+          throw "Test assembly not found: $testDll";
+        }
+        $xunitOutput = & $xunitPath $testDll -maxthreads 1 -appveyor -html 'C:\TestLogs\TestResult.html' 2>&1;
+        $xunitExitCode = $LASTEXITCODE;
+        $xunitOutput | Out-File -FilePath 'C:\TestLogs\XUNnit.txt' -Encoding utf8;
         echo "XUNIT tests finished";
-        if ($LASTEXITCODE -ne 0) {
+        if ($xunitExitCode -ne 0) {
           if ($Env:APPVEYOR_REPO_COMMIT_MESSAGE -match 'rdptestfail') {
              $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
           }
-          throw "($LASTEXITCODE) xunit tests failed. See TestResult.html for details.";
+          throw "($xunitExitCode) xunit tests failed. See TestResult.html for details.";
         }
         $Error.Clear(); $global:LASTEXITCODE = $null;
       }

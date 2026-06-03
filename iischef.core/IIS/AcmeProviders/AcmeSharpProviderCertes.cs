@@ -183,7 +183,11 @@ namespace iischef.core.IIS.AcmeProviders
             var keyPath = fileName + ".key";
 
             var authenticatedPfx = new AuthenticatedPFX(pfxName, cerPath, keyPath, password);
-            var pfxBytes = pfx.Build(certificateFriendlyName, authenticatedPfx.PfxPassword, allowBuildWithoutKnownRoot: true);
+            var pfxBytes = pfx.Build(
+                certificateFriendlyName,
+                authenticatedPfx.PfxPassword,
+                useLegacyKeyAlgorithms: true,
+                skipChainBuild: true);
 
             // We write the PFX/PKCS#12 to file
             File.WriteAllBytes(pfxName, pfxBytes);
@@ -222,8 +226,27 @@ namespace iischef.core.IIS.AcmeProviders
                 throw new BusinessRuleException("Could not create certificate order.");
             }
 
-            // And fetching authorizations
-            var orderAuthz = this.OrderContext.Authorizations().Result;
+            // Fetch authorizations with retry to handle transient ACME cluster replication lag:
+            // the order was created successfully but may not yet be visible on all nodes,
+            // causing "No order for ID" errors on immediate follow-up requests.
+            IEnumerable<IAuthorizationContext> orderAuthz = null;
+
+            UtilsSystem.RetryWhile(
+                () =>
+                {
+                    orderAuthz = this.OrderContext.Authorizations().Result;
+                    return true;
+                },
+                (e) =>
+                {
+                    var inner = (e is AggregateException agg && agg.InnerExceptions?.Count > 0)
+                        ? agg.InnerExceptions[0]
+                        : e;
+                    return inner is AcmeRequestException && inner.Message.Contains("No order for");
+                },
+                30000,
+                this.Logger,
+                3);
 
             // Looping through authorizations
             foreach (IAuthorizationContext authz in orderAuthz)

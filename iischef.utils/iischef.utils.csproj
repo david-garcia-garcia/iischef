@@ -135,7 +135,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Dynamitey">
-      <Version>2.0.10.189</Version>
+      <Version>3.0.3</Version>
     </PackageReference>
     <PackageReference Include="fasterflect">
       <Version>3.0.0</Version>
@@ -153,7 +153,7 @@
       <Version>1.0.2</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.3</Version>
+      <Version>13.0.4</Version>
     </PackageReference>
     <PackageReference Include="Security.Cryptography">
       <Version>1.7.2</Version>
@@ -167,10 +167,10 @@
       <Version>4.3.4</Version>
     </PackageReference>
     <PackageReference Include="xunit">
-      <Version>2.4.2</Version>
+      <Version>2.9.3</Version>
     </PackageReference>
     <PackageReference Include="xunit.runner.console">
-      <Version>2.4.2</Version>
+      <Version>2.9.3</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
