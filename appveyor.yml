@@ -80,13 +80,18 @@ test_script:
       else {
         $xunitPath = "$($Env:USERPROFILE)\.nuget\packages\xunit.runner.console\2.4.2\tools\net462\xunit.console.exe";
         $testDll = "$($Env:APPVEYOR_BUILD_FOLDER)\iischef.tests\bin\Release\iischeftests.dll";
-        &"$xunitPath" "$testDll" -maxthreads "1" -appveyor -html "C:\TestLogs\TestResult.html" 2>&1 > "C:\TestLogs\XUNnit.txt"
+        if (-not (Test-Path -LiteralPath $testDll)) {
+          throw "Test assembly not found: $testDll";
+        }
+        $xunitOutput = & $xunitPath $testDll -maxthreads 1 -appveyor -html 'C:\TestLogs\TestResult.html' 2>&1;
+        $xunitExitCode = $LASTEXITCODE;
+        $xunitOutput | Out-File -FilePath 'C:\TestLogs\XUNnit.txt' -Encoding utf8;
         echo "XUNIT tests finished";
-        if ($LASTEXITCODE -ne 0) {
+        if ($xunitExitCode -ne 0) {
           if ($Env:APPVEYOR_REPO_COMMIT_MESSAGE -match 'rdptestfail') {
              $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
           }
-          throw "($LASTEXITCODE) xunit tests failed. See TestResult.html for details.";
+          throw "($xunitExitCode) xunit tests failed. See TestResult.html for details.";
         }
         $Error.Clear(); $global:LASTEXITCODE = $null;
       }
